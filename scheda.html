@@ -13,10 +13,11 @@
 		
 		@media screen{
 			textarea, input{background-color:rgba(200, 255, 200, 0.5);}
-			form{ float: left;}
 			#btnNew, #btnSave, #files{ margin: 0 2em 2em 0; position: static; }
 			#saved{ color: red; display: none;}
 			.bullet{ display: none; }
+			.paper{ margin-left: auto; margin-right: auto; width: 210mm; position: relative; }
+			.sidebar{ position: fixed; left: 50%; top: 10mm; margin-left: 105mm; }
 		}
 		@media print{
 			textarea, input{background-color: transparent; overflow: hidden; resize: none; }
@@ -34,6 +35,12 @@
 		}
 
 		html, body{margin: 0mm; padding: 0mm; font-size: 8pt; line-height: 10pt; }
+		.paperA4{
+			margin-left: auto;
+			margin-right: auto;
+			width: 210mm;
+			position: relative;
+		}
 		.paper{ background-repeat: no-repeat; width: 210mm; height: 297mm; position: relative; background-size: contain;}
 		.page1{ background-image: url('bg.png');}
 		.page2{ background-image: url('bg2.png');}
@@ -183,23 +190,6 @@
 
 			var name = $('.nomePersonaggio').val();
 			$('#nomePersonaggioScheda2').text( name );
-			
-			if(obj.razza && obj.razza.length > 0){
-				var $lnkRazza = $('#lnkRazza');
-				var razzaHref = 'https://dd-5e-italiano.fandom.com/it/wiki/' + obj.razza;
-				$lnkRazza.attr('href', razzaHref).text('Razza: ' + obj.razza);
-			}
-
-			if(obj.classeLivello && obj.classeLivello.length > 0){
-				var classe = obj.classeLivello;
-				var match = /barbaro|guerriero|ladro|monaco|paladino|ranger|bardo|chierico|druido|mago|stregone|warlock/i.exec(classe);
-				if(match){
-					var $lnkClasse = $('#lnkClasse');
-					var classeHref = 'https://dd-5e-italiano.fandom.com/it/wiki/' + match[0];
-					$lnkClasse.attr('href', classeHref).text('Classe: ' + match[0]);
-				}
-			}
-			
 		}
 
 		function insertAtCursor(myField, myValue) {
@@ -616,9 +606,10 @@ Strumenti:</textarea>
 		</div>
 		</form>
 
-		<div class="printer-invisible" style="position: fixed; left: 210mm;     top: 10mm; padding-left: 1em;">
+		<div class="printer-invisible sidebar">
 			<div>
 				<button id="btnNew" onclick="newCharacter()">Nuova scheda</button>
+				<button id="btnSave">Salva</button>
 			</div>
 
 			<!--Add buttons to initiate auth sequence and sign out-->
@@ -647,9 +638,9 @@ Strumenti:</textarea>
 			
 			<h3>Links</h3>
 			<p class="links">
-				<a href="https://dd-5e-italiano.fandom.com/it/wiki/D%26D_5e_italiano_Wiki" onclick="window.open(this.href); return false;">D&D 5e italiano Wiki</a><br/>
-				<a href="" onclick="window.open(this.href); return false;" id="lnkRazza"></a><br/>
-				<a href="" onclick="window.open(this.href); return false;" id="lnkClasse"></a><br/>
+				<a href="https://dungeonedraghi.it/regole/personaggio/" onclick="window.open(this.href); return false;">Dungeon e Draghi</a><br/>
+				<a href="https://dungeonedraghi.it/regole/razze/" onclick="window.open(this.href); return false;" id="lnkRazza">Razze</a><br/>
+				<a href="https://dungeonedraghi.it/compendio/categoria/classi/" onclick="window.open(this.href); return false;" id="lnkClasse">Classi</a><br/>
 			</p>
 			
 		</div>
