@@ -13,7 +13,7 @@
 		
 		@media screen{
 			textarea, input{background-color:rgba(200, 255, 200, 0.5);}
-			#btnNew, #btnSave, #files{ margin: 0 2em 2em 0; position: static; }
+			#btnNew, #btnSave, #btnSaveAs, #btnLoad, #files{ margin: 0 2em 2em 0; position: static; }
 			#saved{ color: red; display: none;}
 			.bullet{ display: none; }
 			.paper{ margin-left: auto; margin-right: auto; width: 210mm; position: relative; }
@@ -119,26 +119,59 @@
 				localStorage.removeItem('data');
 				$('#character-look').removeAttr('src').hide();
 			}
+
+			localFile = null;
+			$('#btnSave').attr('disabled','disabled');
 		}
 
-		function save(){
+		async function save(){
 			//var nomeGiocatore = $('input[name="nomeGiocatore"]').val();
 
 			var data = $('form').serialize();
 			var imgSrc = $('#character-look').attr('src');
 			if(imgSrc && imgSrc.length > 0)data += '&image=' + encodeURIComponent(imgSrc);
-			
+
+			const writable = await localFile.createWritable();
+			await writable.write(data);
+			await writable.close();
+
 			localStorage.setItem('data', data);
 			console.log('Saved')
 			var $saved = $('<span style="color: red;">Salvato</span>');
 			$saved.insertAfter('#btnSave');
-
 
 //			download(data);
 
 			window.setTimeout(function(){
 				$saved.remove();
 			}, 1000);
+		}
+
+		async function saveAs(){
+			const nomePersonaggio = $('[name="nomePersonaggio"]').val();
+			const classeLivello = $('[name="classeLivello"]').val();
+
+			const suggestedName = `${nomePersonaggio} - ${classeLivello}.dnd`;
+			const fileHandle = await window.showSaveFilePicker({
+				suggestedName
+			});
+			localFile = fileHandle;
+			save();
+		}
+
+		let localFile = null;
+		async function loadLocalFile(){
+			try{
+				const [fileHandle] = await window.showOpenFilePicker();
+				const file = await fileHandle.getFile();
+				const contents = await file.text();
+				load( contents );
+
+				localFile = fileHandle;
+				$('#btnSave').removeAttr('disabled');
+			}catch(ex){
+				console.error('Cannot load file', ex);
+			}
 		}
 
 /*		function download(data) {
@@ -214,9 +247,9 @@
 		}
 
 		$(function(){
-			$('#btnSave').click(function(){
-				save();
-			});
+			$('#btnSave').click( save ).attr('disabled','disabled');
+			$('#btnSaveAs').click( saveAs );
+			$('#btnLoad').click( loadLocalFile );
 
 			$(window).keydown(function(event) {
 				//console.log(event.which, event.ctrlKey);
@@ -609,7 +642,9 @@ Strumenti:</textarea>
 		<div class="printer-invisible sidebar">
 			<div>
 				<button id="btnNew" onclick="newCharacter()">Nuova scheda</button>
+				<button id="btnLoad">Apri</button>
 				<button id="btnSave">Salva</button>
+				<button id="btnSaveAs">Salva con nome...</button>
 			</div>
 
 			<!--Add buttons to initiate auth sequence and sign out-->
