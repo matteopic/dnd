@@ -18,6 +18,7 @@
 			.bullet{ display: none; }
 			.paper{ margin-left: auto; margin-right: auto; width: 210mm; position: relative; }
 			.sidebar{ position: fixed; left: 50%; top: 10mm; margin-left: 105mm; }
+			.util-chars button { height: 2rem; text-align: center; vertical-align: middle; font-size: 1rem;}
 		}
 		@media print{
 			textarea, input{background-color: transparent; overflow: hidden; resize: none; }
@@ -157,6 +158,7 @@
 			});
 			localFile = fileHandle;
 			save();
+			$('#btnSave').removeAttr('disabled');
 		}
 
 		let localFile = null;
@@ -663,6 +665,7 @@ Strumenti:</textarea>
 			<div class="util-chars">
 				<button title="Elenco puntato">&#8226;</button>
 				<button title="Metà">&#189;</button>
+				<button title="Per">&times;</button>
 				<button title="Oggetto magico">&#127292;</button>
 				<button title="Slot">&#9744;</button>
 				<button title="Nessuna competenza">&#9898;</button>
