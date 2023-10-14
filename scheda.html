@@ -18,6 +18,7 @@
 			.bullet{ display: none; }
 			.paper{ margin-left: auto; margin-right: auto; width: 210mm; position: relative; }
 			.sidebar{ position: fixed; left: 50%; top: 10mm; margin-left: 105mm; }
+			.sidebar input{ position: static;}
 			.util-chars button { height: 2rem; text-align: center; vertical-align: middle; font-size: 1rem;}
 		}
 		@media print{
@@ -180,14 +181,13 @@ $.fn.imagedrop = function(action, options) {
 			}
 
 			localFile = null;
+			$('#btnLoadInputFile').val(null);
 			$('#btnSave').attr('disabled','disabled');
 			$('.aspetto').imagedrop('reset');
 			$('.simbolo').imagedrop('reset');
 		}
 
 		async function save(){
-			//var nomeGiocatore = $('input[name="nomeGiocatore"]').val();
-
 			var data = $('form').serialize();
 			var aspettoSrc = $('.aspetto').imagedrop('url');
 			if(aspettoSrc && aspettoSrc.length > 0)data += '&image=' + encodeURIComponent(aspettoSrc);
@@ -195,16 +195,16 @@ $.fn.imagedrop = function(action, options) {
 			var simboloSrc = $('.simbolo').imagedrop('url');
 			if(simboloSrc && simboloSrc.length > 0)data += '&symbol=' + encodeURIComponent(simboloSrc);
 
-			const writable = await localFile.createWritable();
-			await writable.write(data);
-			await writable.close();
+			if(localfile){
+				const writable = await localFile.createWritable();
+				await writable.write(data);
+				await writable.close();
+			}
 
 			localStorage.setItem('data', data);
 			console.log('Saved')
 			var $saved = $('<span style="color: red;">Salvato</span>');
 			$saved.insertAfter('#btnSave');
-
-//			download(data);
 
 			window.setTimeout(function(){
 				$saved.remove();
@@ -239,6 +239,21 @@ $.fn.imagedrop = function(action, options) {
 			}
 		}
 
+		async function loadInputFile(evt){
+			try{
+				const files = evt.target.files;
+				if (files.length === 0)return;
+
+				const file = files[0];
+				const contents = await file.text();
+				load( contents );
+				$('#btnSave').removeAttr('disabled');
+				evt.target.value = null;
+			}catch(ex){
+				console.error('Cannot load file', ex);
+			}
+		}
+
 		function handleFileSelect(evt) {
 			var files = evt.target.files; // FileList object
 	
@@ -255,6 +270,7 @@ $.fn.imagedrop = function(action, options) {
 		}
 
 		function load(data){
+			$('form')[0].reset();
 			$('.aspetto').imagedrop('reset');
 			$('.simbolo').imagedrop('reset');
 			var obj = {};
@@ -303,8 +319,11 @@ $.fn.imagedrop = function(action, options) {
 
 		$(function(){
 			$('#btnSave').click( save ).attr('disabled','disabled');
-			$('#btnSaveAs').click( saveAs );
-			$('#btnLoad').click( loadLocalFile );
+			
+			const hasLocalFile = window.showOpenFilePicker != null;
+			$('#btnLoad').click( loadLocalFile ).toggle(hasLocalFile);
+			$('#btnLoadInputFile').on( 'change', loadInputFile ).toggle(hasLocalFile === false);
+			$('#btnSaveAs').click( saveAs ).toggle(hasLocalFile);;
 
 			$(window).keydown(function(event) {
 				//console.log(event.which, event.ctrlKey);
@@ -652,39 +671,31 @@ Strumenti:</textarea>
 				<button id="btnSave">Salva</button>
 				<button id="btnSaveAs">Salva con nome...</button>
 			</div>
-
-			<!--Add buttons to initiate auth sequence and sign out-->
 			<div>
-				<button id="authorize_button" style="display: none;">Authorize</button>
-
-				<button id="btnLoadFromDrive" style="display: none;">Load</button>
-				
-				<button id="save_to_drive" style="display: none;">Save</button>
-				
-				<button id="signout_button" style="display: none;">Sign Out</button>
+				<input type="file" id="btnLoadInputFile" />
 			</div>
+
 			<div>
-
-			<h3>Caratteri Utili</h3>
-			<div class="util-chars">
-				<button title="Elenco puntato">&#8226;</button>
-				<button title="Metà">&#189;</button>
-				<button title="Per">&times;</button>
-				<button title="Oggetto magico">&#127292;</button>
-				<button title="Slot">&#9744;</button>
-				<button title="Nessuna competenza">&#9898;</button>
-				<button title="Competenza">&#9899;</button>
-				<button title="Doppia competenza">&#9673;</button>
-				<button title="Mezza competenza">&#9681;</button>
+				<h3>Caratteri Utili</h3>
+				<div class="util-chars">
+					<button title="Elenco puntato">&#8226;</button>
+					<button title="Metà">&#189;</button>
+					<button title="Per">&times;</button>
+					<button title="Oggetto magico">&#127292;</button>
+					<button title="Slot">&#9744;</button>
+					<button title="Nessuna competenza">&#9898;</button>
+					<button title="Competenza">&#9899;</button>
+					<button title="Doppia competenza">&#9673;</button>
+					<button title="Mezza competenza">&#9681;</button>
+				</div>
+			
+				<h3>Links</h3>
+				<p class="links">
+					<a href="https://dungeonedraghi.it/regole/personaggio/" onclick="window.open(this.href); return false;">Dungeon e Draghi</a><br/>
+					<a href="https://dungeonedraghi.it/regole/razze/" onclick="window.open(this.href); return false;" id="lnkRazza">Razze</a><br/>
+					<a href="https://dungeonedraghi.it/compendio/categoria/classi/" onclick="window.open(this.href); return false;" id="lnkClasse">Classi</a><br/>
+				</p>
 			</div>
-			
-			<h3>Links</h3>
-			<p class="links">
-				<a href="https://dungeonedraghi.it/regole/personaggio/" onclick="window.open(this.href); return false;">Dungeon e Draghi</a><br/>
-				<a href="https://dungeonedraghi.it/regole/razze/" onclick="window.open(this.href); return false;" id="lnkRazza">Razze</a><br/>
-				<a href="https://dungeonedraghi.it/compendio/categoria/classi/" onclick="window.open(this.href); return false;" id="lnkClasse">Classi</a><br/>
-			</p>
-			
 		</div>
 	</body>
 </html>
