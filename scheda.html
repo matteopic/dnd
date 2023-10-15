@@ -195,7 +195,7 @@ $.fn.imagedrop = function(action, options) {
 			var simboloSrc = $('.simbolo').imagedrop('url');
 			if(simboloSrc && simboloSrc.length > 0)data += '&symbol=' + encodeURIComponent(simboloSrc);
 
-			if(localfile){
+			if(localFile){
 				const writable = await localFile.createWritable();
 				await writable.write(data);
 				await writable.close();
