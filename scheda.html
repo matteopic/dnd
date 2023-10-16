@@ -187,20 +187,17 @@ $.fn.imagedrop = function(action, options) {
 			$('.simbolo').imagedrop('reset');
 		}
 
-		async function save(){
+		function serializeData(){
 			var data = $('form').serialize();
 			var aspettoSrc = $('.aspetto').imagedrop('url');
 			if(aspettoSrc && aspettoSrc.length > 0)data += '&image=' + encodeURIComponent(aspettoSrc);
 			
 			var simboloSrc = $('.simbolo').imagedrop('url');
 			if(simboloSrc && simboloSrc.length > 0)data += '&symbol=' + encodeURIComponent(simboloSrc);
+			return data;
+		}
 
-			if(localFile){
-				const writable = await localFile.createWritable();
-				await writable.write(data);
-				await writable.close();
-			}
-
+		function _saveInternal(data){
 			localStorage.setItem('data', data);
 			console.log('Saved')
 			var $saved = $('<span style="color: red;">Salvato</span>');
@@ -211,7 +208,20 @@ $.fn.imagedrop = function(action, options) {
 			}, 1000);
 		}
 
+		async function save(){
+			const data = serializeData();
+
+			if(localFile != null){
+				const writable = await localFile.createWritable();
+				await writable.write(data);
+				await writable.close();
+			}
+			_saveInternal(data);
+		}
+
 		async function saveAs(){
+			const data = serializeData();
+
 			const nomePersonaggio = $('[name="nomePersonaggio"]').val();
 			const classeLivello = $('[name="classeLivello"]').val();
 
@@ -220,8 +230,26 @@ $.fn.imagedrop = function(action, options) {
 				suggestedName
 			});
 			localFile = fileHandle;
-			save();
+			_saveInternal(data);
 			$('#btnSave').removeAttr('disabled');
+		}
+
+		async function saveAsBlob(){
+			const data = serializeData();
+			let blob = new Blob([data], {type: 'text/plain'});
+			
+			const nomePersonaggio = $('[name="nomePersonaggio"]').val();
+			const classeLivello = $('[name="classeLivello"]').val();
+			const suggestedName = `${nomePersonaggio} - ${classeLivello}.dnd`;
+			
+			let link = document.createElement('a');
+			link.download = suggestedName;
+			link.href = URL.createObjectURL(blob);
+			link.click();
+			URL.revokeObjectURL(link.href);
+			localFile = null;
+
+			_saveInternal(data);
 		}
 
 		let localFile = null;
@@ -318,12 +346,13 @@ $.fn.imagedrop = function(action, options) {
 		}
 
 		$(function(){
-			$('#btnSave').click( save ).attr('disabled','disabled');
 			
 			const hasLocalFile = window.showOpenFilePicker != null;
 			$('#btnLoad').click( loadLocalFile ).toggle(hasLocalFile);
+			$('#btnSave').click( save ).attr('disabled','disabled').toggle(hasLocalFile);
+			$('#btnSaveAs').click( saveAs ).toggle(hasLocalFile);
 			$('#btnLoadInputFile').on( 'change', loadInputFile ).toggle(hasLocalFile === false);
-			$('#btnSaveAs').click( saveAs ).toggle(hasLocalFile);;
+			$('#btnSaveAsBlob').click( saveAsBlob ).toggle(hasLocalFile === false);
 
 			$(window).keydown(function(event) {
 				//console.log(event.which, event.ctrlKey);
@@ -670,6 +699,7 @@ Strumenti:</textarea>
 				<button id="btnLoad">Apri</button>
 				<button id="btnSave">Salva</button>
 				<button id="btnSaveAs">Salva con nome...</button>
+				<button id="btnSaveAsBlob">Scarica una copia</button>
 			</div>
 			<div>
 				<input type="file" id="btnLoadInputFile" />
